@@ -1,4 +1,4 @@
-﻿<#
+﻿    <#
 
 .SYNOPSIS
 PSAppDeployToolkit.Extensions - Provides the ability to extend and customize the toolkit by adding your own functions that can be re-used.
