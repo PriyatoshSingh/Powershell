@@ -68,7 +68,6 @@ try {
     Stop-Transcript
     exit
 }
-
 Write-Host "We are attempting to add $($users.Count) users"
 $count = 0
 $results = @() # Array to store results for output

@@ -25,7 +25,7 @@ $csv = Read-Host "Enter the CSV full path, ensure there is only column named UPN
 $csv = $csv.Trim('"')
 $groupObjectId = Read-Host "Enter the Group Object ID"
 
-if (string::IsNullOrWhiteSpace($CHG) -or string::IsNullOrWhiteSpace($Wave))
+if ([string]::IsNullOrWhiteSpace($CHG) -or [string]::IsNullOrWhiteSpace($Wave))
 {
     Write-Host "CHG number and Wave number cannot be empty."
     exit
