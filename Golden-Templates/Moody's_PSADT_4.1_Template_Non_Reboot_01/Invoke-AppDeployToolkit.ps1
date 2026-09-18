@@ -158,6 +158,45 @@ function Install-ADTDeployment
         return
     }
 
+    ##Check if the script is running from the same path and exit with 400
+
+    $CurrentPackagePath = [System.IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')
+    try
+    {
+        $MatchingPackageInstances = @(Get-CimInstance -ClassName Win32_Process -Filter "Name = 'Invoke-AppDeployToolkit.exe'" -ErrorAction Stop | Where-Object {
+            if ([string]::IsNullOrWhiteSpace($_.ExecutablePath))
+            {
+                return $false
+            }
+
+            $RunningPackagePath = [System.IO.Path]::GetDirectoryName($_.ExecutablePath).TrimEnd('\')
+
+            Write-ADTLogEntry -Message "Invoke-AppDeployToolkit.exe process ID [$($_.ProcessId)] is running from [$RunningPackagePath]."
+
+            $RunningPackagePath -ieq $CurrentPackagePath
+        })
+
+        Write-ADTLogEntry -Message "Current package directory is [$CurrentPackagePath]."
+        Write-ADTLogEntry -Message "Found [$($MatchingPackageInstances.Count)] instance(s) running from the current package directory."
+
+        if ($MatchingPackageInstances.Count -gt 1)
+        {
+            $MatchingProcessIds = $MatchingPackageInstances.ProcessId -join ', '
+
+            Write-ADTLogEntry -Message "Another instance of Invoke-AppDeployToolkit.exe is already running from [$CurrentPackagePath]. Matching process IDs: [$MatchingProcessIds]. Exiting with code [400]."
+
+            Close-ADTSession -ExitCode 400
+            return
+        }
+
+        Write-ADTLogEntry -Message "No duplicate instance was detected for [$CurrentPackagePath]. Continuing with the deployment."
+    }
+    catch
+    {
+        Write-ADTLogEntry -Message "The duplicate-instance check could not be completed. Error: $($_.Exception.Message)"
+    
+    }
+
     ##================================================
     ## MARK: Managed Deferral
     ##================================================
